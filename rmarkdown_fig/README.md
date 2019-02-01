@@ -7,9 +7,10 @@ then load it:
 
     library(rmarkdown)
 
-## Open the `demo.Rmd` using RStudio
-* then either select `Knit` -> `Knit to PDF`
-  ![alt text][rmd_fig.png]
-* or type `render("demo.Rmd")` in the terminal panel;
+* Open the `demo.Rmd` using RStudio
+* There are two ways to render a PDF:
+  * select `Knit` -> `Knit to PDF` in the menu
+  ![altext](rmd_fig.png)
+  * type `render("demo.Rmd")` in the terminal panel;
 
 Check [this tutorial](https://rmarkdown.rstudio.com/lesson-1.html) for more R Markdown tutorial.
