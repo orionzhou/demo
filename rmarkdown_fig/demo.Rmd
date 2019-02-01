@@ -1,0 +1,36 @@
+---
+title: "This is a title"
+output:
+  pdf_document:
+    keep_tex: false
+    fig_caption: true
+    latex_engine: pdflatex
+    template: rmd-latex-ms.tex
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+geometry: margin=1in
+fontsize: 11pt
+fontfamily: mathpazo
+# spacing: double
+# biblio-style: apsr
+header-includes:
+- \usepackage{caption}
+- \captionsetup[figure]{labelformat=empty}
+- \AtBeginDocument{\let\maketitle\relax}
+---
+\pagenumbering{gobble}
+
+Markdown provides an easy way to make standard types of formatted text, like
+
+- *italics*
+- **bold**
+- `code`
+- [links](rmarkdown.rstudio.com)
+- etc.
+
+![Figure 1. Test maize logo figure.](~/git/maizeumn.github.io/images/maize_400.png){width=30%}
+
+Detailed figure descriptions goes here...
+
+\pagebreak
+![Figure 2. Test maize logo figure.](~/git/maizeumn.github.io/images/maize_400.png){width=30%}
+
