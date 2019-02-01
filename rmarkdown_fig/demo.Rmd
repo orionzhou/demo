@@ -27,10 +27,10 @@ Markdown provides an easy way to make standard types of formatted text, like
 - [links](rmarkdown.rstudio.com)
 - etc.
 
-![Figure 1. Test maize logo figure.](~/git/maizeumn.github.io/images/maize_400.png){width=30%}
+![Figure 1. Test maize logo figure.](maize.png){width=30%}
 
 Detailed figure descriptions goes here...
 
 \pagebreak
-![Figure 2. Test maize logo figure.](~/git/maizeumn.github.io/images/maize_400.png){width=30%}
+![Figure 2. Test maize logo figure.](maize.png){width=30%}
 
