@@ -11,6 +11,7 @@ then load it:
 
 * Download `demo.Rmd`, `rmd-latex-ms.tex` (a template file) and `maize.png` (the figure(s) you want to insert into PDF);
 * Open the `demo.Rmd` in RStudio;
+* (Optional) Make modifications (insert additional figures, etc.);
 * Select `Knit` -> `Knit to PDF` in the menu;
 
 <img src="rmd_fig.png" width="400">
