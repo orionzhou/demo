@@ -3,11 +3,11 @@
 * Install R Markdown as an R library
   * In [RStudio](https://www.rstudio.com) terminal panel type:
 
-      install.packages("rmarkdown")
+        install.packages("rmarkdown")
 
   * then load it:
 
-      library(rmarkdown)
+        library(rmarkdown)
 
 * Download `demo.Rmd`, `rmd-latex-ms.tex` (a template file) and `maize.png` (the figure(s) you want to insert into PDF);
 * Open the `demo.Rmd` in RStudio;
