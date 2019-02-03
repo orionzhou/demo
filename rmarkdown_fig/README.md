@@ -1,4 +1,6 @@
-## Install R Markdown as an R library
+# Generate PDF Report using R Markdown
+
+* Install R Markdown as an R library
 In [RStudio](https://www.rstudio.com) terminal panel type:
 
     install.packages("rmarkdown")
