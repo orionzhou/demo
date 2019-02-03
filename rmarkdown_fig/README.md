@@ -1,11 +1,11 @@
 # Generate PDF Report using R Markdown
 
 * Install R Markdown as an R library
-In [RStudio](https://www.rstudio.com) terminal panel type:
+  * In [RStudio](https://www.rstudio.com) terminal panel type:
 
     install.packages("rmarkdown")
 
-then load it:
+  * then load it:
 
     library(rmarkdown)
 
