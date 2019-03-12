@@ -8,9 +8,8 @@
             params:
                 q: small
                 nodes: 1
-                ppn: 1
-                runtime: 2:00:00
                 mem: 8gb
+                runtime: 2:00:00
                 M: XXX@umn.edu
                 m: a
                 r: n
