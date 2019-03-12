@@ -3,7 +3,7 @@
 ## Requirements
 * software
   * python3
-  * [star](https://github.com/alexdobin/STAR) or [hisat2](https://ccb.jhu.edu/software/hisat2/index.shtml)
+  * an aligner: [star](https://github.com/alexdobin/STAR) or [hisat2](https://ccb.jhu.edu/software/hisat2/index.shtml)
   * [bedtools](https://bedtools.readthedocs.io/en/latest/)
   * custom python script: [ase.py](https://github.com/orionzhou/maize/blob/master/projects/ase.py)
 * input files
@@ -12,6 +12,7 @@
   * [Mo17 SNP VCF](https://conservancy.umn.edu/handle/11299/198135?show=full)
 
 ## Align RNA-Seq reads to the reference
+* (You can skip this step if you have already mapped your reads);
 * The easiest way is to align everything to a single reference (B73 AGPv4) using [STAR](https://github.com/alexdobin/STAR);
 * But to avoid mapping bias (e.g., some Mo17 reads contain mismatches (SNPs) to the B73 reference, so in general Mo17 samples will have a lower mapping rate than B73 samples, this is not a biological but technical bias), it is recommended to use [Hisat2](https://ccb.jhu.edu/software/hisat2/index.shtml) to build a variant-aware genome index using [Mo17 SNPs](https://conservancy.umn.edu/handle/11299/198135?show=full);
 * [optional] Proper post-processing of obtained BAM alignments (PCR duplicate removal, etc.)
@@ -22,19 +23,19 @@
 * the gene interval file (in BED format) is also downloaded and renamed to `genes.bed`
 * create a folder and move all three files in:
 
-    mkdir ase_test
-    cd ase_tes
-    mv ???/01.bam ????/Mo17.vcf.gz ?????/genes.bed ./
+      mkdir ase_test
+      cd ase_tes
+      mv ???/01.bam ????/Mo17.vcf.gz ?????/genes.bed ./
 
 * convert BAM file to interval BED file and sort (this may take a while depending on the size of the BAM):
 
-    ase.py bam2bed 01.bam 02.bed
-    sort -k1,1 -k2,2n 02.bed -o 03.sorted.bed
+      ase.py bam2bed 01.bam 02.bed
+      sort -k1,1 -k2,2n 02.bed -o 03.sorted.bed
 
 * extract reads overlapping known Mo17 SNPs and sort:
 
-    bedtools intersect -wa -wb -a 03.sorted.bed -b Mo17.bed > 04.ovlp.bed
-    sort -k4,4 -k1,1 -k2,2n 04.ovlp.bed > 05.sorted.bed
+      bedtools intersect -wa -wb -a 03.sorted.bed -b Mo17.bed > 04.ovlp.bed
+      sort -k4,4 -k1,1 -k2,2n 04.ovlp.bed > 05.sorted.bed
 
 * prepare extracted reads for B73/Mo17 allele separation and sort:
 
