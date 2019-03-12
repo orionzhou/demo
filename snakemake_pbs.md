@@ -1,6 +1,6 @@
 # Run snakemake through PBS job server
 
-1. add these job properties to the `params` section of each rule:
+1. add these job properties to the `params` and `threads` sections of each rule:
 
         rule:
             input:  ...
