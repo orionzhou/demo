@@ -23,5 +23,14 @@ Then, sourcing the `~/.bashrc`:
 
 Then you should be able to run all the python scripts in the `maize` library:
 
-    fasta.py -h
+    (work) zhoux379@ln0005:src $ fasta.py extract -h
+    usage: fasta.py extract [-h] [--padding] db loc
+
+    positional arguments:
+      db          sequence database (fasta or genome ID)
+      loc         location string(s) or BED file(s) (separated by ",")
+
+    optional arguments:
+      -h, --help  show this help message and exit
+      --padding   padding to size (default: False)
 
