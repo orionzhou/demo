@@ -35,8 +35,13 @@
   * A sample input file can be found here: [sample.tsv](sample.tsv)
 * run the script
 
+        # activate the conda environment if you haven't already
+        conda activate primer3
+
         # show help message
         ./run_primer3.py -h
+
+        # show help message
         ./run_primer3.py ufmu -h
 
         # run the script with sample input
