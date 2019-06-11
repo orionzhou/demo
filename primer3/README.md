@@ -28,10 +28,10 @@
 ## Running the script
 
 * Input file:
-  * the input needs to a tab-separated text file with no headers and 4 columns:
-    * column 1: an arbitrary ID for the sequence, need to be unique
-    * columns 2 and 3: **relative** location (start, end) of the target segment in the sequence
-    * column 4: input sequence
+  * the input needs to a tab-separated text file with 4 columns:
+    * `pid`: an arbitrary ID for the sequence, need to be unique
+    * `start`, `end`: **relative** location (start, end) of the target segment in the sequence
+    * `seq`: input sequence
   * A sample input file can be found here: [sample.tsv](sample.tsv)
 * run the script
 
