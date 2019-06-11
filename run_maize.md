@@ -1,18 +1,18 @@
 ## This tutorial covers how to run the [maize python library](https://github.com/orionzhou/maize) on MSI
 
-It is recommended that [Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/getting-started.html#managing-conda) is installed to handle all dependencies.
+It is recommended that [Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/getting-started.html#managing-conda) being installed to handle all dependencies.
 
 Pre-requisites can then be installed using `conda install`:
 
     conda install biopython numpy pysam pyfaidx
 
-If you plan to run the python scripts on MSI, you simply need to add these lines to your `~/.bashrc` file:
+If you plan to run the python scripts on MSI, simply add these lines to your `~/.bashrc` file:
 
     export maize=/home/springer/zhoux379/git/maize
 
     for subdir in algorithms apps compara formats projects utils variation test
     do
-        if [ -d $maize/$pname ]; then
+        if [ -d $maize/$subdir ]; then
             export PATH=$maize/$subdir:$PATH
         fi
     done
