@@ -14,7 +14,7 @@ def ufmu(args):
     gcfg = yaml.load(fhc, Loader=yaml.SafeLoader)
 
     fi = args.fi
-    df = pd.read_csv(fi, sep="\t", header=None)
+    df = pd.read_csv(fi, sep="\t", header=0)
     pkeys = '''
         PRIMER_LEFT_NUM_RETURNED PRIMER_RIGHT_NUM_RETURNED PRIMER_PAIR_NUM_RETURNED
         MER_LEFT_0 PRIMER_RIGHT_0 PRIMER_LEFT_0_SEQUENCE PRIMER_RIGHT_0_SEQUENCE
@@ -23,7 +23,7 @@ def ufmu(args):
         left.start left.size left.seq right.start right.size right.seq'''.split()
     print("\t".join(hcols))
     for i in range(len(df)):
-        pid, start, end, seq = df[0][i], int(df[1][i]), int(df[2][i]), df[3][i]
+        pid, start, end, seq = df['pid'][i], int(df['start'][i]), int(df['end'][i]), df['seq'][i]
         scfg = dict()
         scfg['SEQUENCE_ID'] = pid
         scfg['SEQUENCE_TEMPLATE'] = seq
