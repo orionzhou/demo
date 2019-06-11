@@ -7,8 +7,6 @@ import yaml
 import pandas as pd
 import primer3
 
-from maize.apps.base import sh, mkdir
-
 def ufmu(args):
     fhc = open(args.cfg, 'r')
     gcfg = yaml.load(fhc, Loader=yaml.SafeLoader)
