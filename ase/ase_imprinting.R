@@ -60,4 +60,6 @@ tb = ta %>% mutate(res = map2(nl1, nl2, fit_bb)) %>%
     select(gid, n1, n2, res) %>% unnest() %>%
     mutate(imprint = ifelse(bic1 < bic2, 'no_imprint', 'imprint'))
 
+# currently the script calls an impriting whenever model1 outperforms model2 (bic1 - bic2 > 0)
+# can also require bic1 - bic2 >= 2 to make a more stringent call
 
