@@ -23,7 +23,7 @@ Then, sourcing the `~/.bashrc`:
 
 Then you should be able to run all the python scripts in the `maize` library:
 
-    (work) zhoux379@ln0005:src $ fasta.py extract -h
+    (base) zhoux379@ln0005:src $ fasta.py extract -h
     usage: fasta.py extract [-h] [--padding] db loc
 
     positional arguments:
