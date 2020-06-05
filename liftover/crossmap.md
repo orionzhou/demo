@@ -21,6 +21,6 @@
     $ cat B.bed
     M01     1200000 1201000 ->      B01     794173  795173
 
-Sometimes the result will be "Unmap" or "Split" depending on the chain mapping.
+Sometimes the result will be "Unmap" (if the query coordinate does not have a match in the target genome) or "Split" (if the query segment had at least one indels in the target genome) depending on the chain mapping.
 
 
