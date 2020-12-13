@@ -30,6 +30,8 @@
 
 ### Create an empty S3 bucket served on msi.umn.edu
 
+    # list your existing buckets
+    s3cmd ls
 
     # make a new bucket
     s3cmd mb s3://zhoup-igv-test
@@ -47,7 +49,5 @@ Now the app should be accessible online:
 	https://s3.msi.umn.edu/zhoup-igv-test/index.html
 
 ### Customized genome configuration
-# list your existing buckets
-s3cmd ls
 - Check [igv-webapp github](https://github.com/igvteam/igv-webapp)
 - Here is [a sample configuration for maize](https://github.com/orionzhou/igv-webapp/blob/master/igvwebConfig.js)
