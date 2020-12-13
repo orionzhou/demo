@@ -14,7 +14,7 @@
 
 ### Clone the igv-webapp repository to local:
 
-    cd /home/springer/zhoux379/git
+    cd ~
     git clone git@github.com:igvteam/igv-webapp.git
 
 (or if you cloned the repo a while ago) update the local repo (if there are new changes):
@@ -47,6 +47,8 @@
 
 Now the app should be accessible online:
 	https://s3.msi.umn.edu/zhoup-igv-test/index.html
+
+Check here for more [s3cmd usages](https://s3tools.org/usage)
 
 ### Customized genome configuration
 - Check [igv-webapp github](https://github.com/igvteam/igv-webapp)
