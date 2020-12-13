@@ -25,7 +25,7 @@
 ### Create a conda environment named `rnaseq` to run the pipeline:
 This can be done either [using an existing environment yml file](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-from-an-environment-yml-file):
 
-    conda env create -n rnaseq -f nf/configs/environments/rnaseq.yml
+    conda env create -n rnaseq -f $NXF_HOME/configs/environments/rnaseq.yml
     conda env list
     # you should now see a new environment named "rnaseq"
 
