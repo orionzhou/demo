@@ -1,18 +1,18 @@
 ## Nextflow RNA-Seq pipeline
 
-Install [Miniconda](https://docs.conda.io/en/latest/miniconda.html)
+### Install [Miniconda](https://docs.conda.io/en/latest/miniconda.html)
 
     wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
     bash Miniconda3-latest-Linux-x86_64.sh
 
-Intall [Nextflow](https://github.com/nextflow-io/nextflow) (in a new conda environment)
+### Intall [Nextflow](https://github.com/nextflow-io/nextflow) (in a new conda environment)
 
     conda create -n nf python=3
     conda activate nf
     conda install nextflow
     conda list
 
-Clone the repo to local:
+### Clone the repo to local:
 
     cd /home/springer/zhoux379/git
     git clone https://github.com/orionzhou/nf.git
@@ -22,14 +22,14 @@ Clone the repo to local:
     cd /home/springer/zhoux379/git/nf
     git pull
 
-Create a conda environment named `rnaseq` to run the pipeline:
-- This can be done either [using an existing environment yml file](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-from-an-environment-yml-file):
+### Create a conda environment named `rnaseq` to run the pipeline:
+This can be done either [using an existing environment yml file](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-from-an-environment-yml-file):
 
     conda env create -n rnaseq -f nf/configs/environments/rnaseq.yml
     conda env list
     # you should now see a new environment named "rnaseq"
 
-- or create an empty environment and then manual install the packages:
+or create an empty environment and then manual install the packages:
 
     conda create -n rnaseq
     conda env list
@@ -37,6 +37,7 @@ Create a conda environment named `rnaseq` to run the pipeline:
     conda activate rnaseq
     conda install sra-tools pigz fastqc trim-galore bwa hisat2 star picard samtools bcftools bedtools bamtools pysam sambamba preseq alfred bioawk biopython deeptools jcvi kallisto minimap2 numpy pandas perl plotly pyfaidx pybigwig ucsc-bedgraphtobigwig subread r-base r-tidyverse r-glue r-argparse r-purrr r-readr r-readxl rseqc salmon stringtie multiqc
 
+### Post set-up
 Add these environmental variables (with necessary modification) to your `~/.bashrc` or `~/.bash_profile`
 
     export NXF_HOME=/home/springer/zhoux379/git/nf
