@@ -1,8 +1,10 @@
 # Classify cis/trans inheritance pattern using inbred/hybrid expression data
 
 * Install R packages: `tidyverse`, `bbmle`, `multidplyr`
-	
+
+```
 	conda install r-tidyverse r-bbmle r-multidplyr
+```
 
 * To run the cis/trans classification script, the first thing we need to do is to obtain raw read counts for our samples.
   - Specifically, we need to obtain total read counts for the parents (e.g., B73 and Mo17 inbred lines) as well as allele-specific read counts for both allels in the hybrid
@@ -23,9 +25,9 @@
   - These two steps are not required, users can set all sample sizeFactors to 1 and gene dispersions to 0 to get the script running
 
 * Run the script
-  
+  ```
   $ ./cis_trans.R t01_readCount.tsv t01_sizeFactor.tsv t01_dispersion.tsv t01_result.tsv
-
+  ```
   - example output file: [t01_result.tsv](t01_result.tsv)
     - `gid`: gene ID
     - `prop.p`, `prop.h`: proportion of allele1 expression in the parent and hybrid
