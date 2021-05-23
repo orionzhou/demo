@@ -33,7 +33,7 @@
     - `prop.p`, `prop.h`: proportion of allele1 expression in the parent and hybrid
     - `reg`: inferred regulatory pattern, one of `conserved`, `cis`, `trans`, `cis+trans` or `unexpected`
   - detailed script usage
-    ```
+  ```
  $ ./cis_trans.R -h
 usage: ./cis_trans.R [-h] [--mode MODE] [--min_rc MIN_RC] [--n_cpu N_CPU]
                      f_rc f_sf f_dsp fo
@@ -55,4 +55,4 @@ optional arguments:
                    10]
   --n_cpu N_CPU    number of CPUs / threads to use for parallel processing
                    (for spped up if you have many genes) [default: 1]
-    ```
+  ```
