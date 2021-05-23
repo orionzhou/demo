@@ -1,4 +1,4 @@
-# Classify cis/trans inheritance pattern using inbred/hybrid expression data
+# Classify cis/trans inheritance pattern using inbred/hybrid expression
 
 * Install R packages: `tidyverse`, `bbmle`, `multidplyr`
   ```
