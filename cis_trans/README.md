@@ -2,7 +2,9 @@
 
 * Install R packages: `tidyverse`, `bbmle`, `multidplyr`
   ```
-	conda install r-tidyverse r-bbmle r-multidplyr
+	conda install r-tidyverse r-bbmle
+	
+	devtools::install(multidplyr)
   ```
 * To run the cis/trans classification script, the first thing we need to do is to obtain raw read counts for our samples.
   - Specifically, we need to obtain total read counts for the parents (e.g., B73 and Mo17 inbred lines) as well as allele-specific read counts for both alleles in the hybrid
@@ -33,8 +35,9 @@
     - `prop.p`, `prop.h`: proportion of allele1 expression in the parent and hybrid
     - `reg`: inferred regulatory pattern, one of `conserved`, `cis`, `trans`, `cis+trans` or `unexpected`
   - detailed script usage
+
   ```
- $ ./cis_trans.R -h
+$ ./cis_trans.R -h
 usage: ./cis_trans.R [-h] [--mode MODE] [--min_rc MIN_RC] [--n_cpu N_CPU]
                      f_rc f_sf f_dsp fo
 
