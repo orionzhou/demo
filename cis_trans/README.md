@@ -1,14 +1,12 @@
 # Classify cis/trans inheritance pattern using inbred/hybrid expression data
 
 * Install R packages: `tidyverse`, `bbmle`, `multidplyr`
-
-```
+  ```
 	conda install r-tidyverse r-bbmle r-multidplyr
-```
-
+  ```
 * To run the cis/trans classification script, the first thing we need to do is to obtain raw read counts for our samples.
-  - Specifically, we need to obtain total read counts for the parents (e.g., B73 and Mo17 inbred lines) as well as allele-specific read counts for both allels in the hybrid
-  - Although multiple replicates are not required to run the script, >=2 replicates are highly recommended since it significantly increases statistical confidence
+  - Specifically, we need to obtain total read counts for the parents (e.g., B73 and Mo17 inbred lines) as well as allele-specific read counts for both alleles in the hybrid
+  - Although multiple replicates are not required to run the script, >=2 replicates are highly recommended since it significantly increases statistical power to make inferences
   - [t01_readCount.tsv](t01_readCount.tsv) is a sample read count table with the following columns:
     - `gid`: gene ID
     - `parA_rep1`, `parA_rep2`, ..., : total read counts in parent A (e.g., B73) replicates
@@ -17,6 +15,8 @@
     - `hybB_rep1`, `hybB_rep2`, ..., : allele-specific read counts in for allele B (e.g., Mo17) in hybrid replicates
   - Parent columns must start with `parA_` and `parB_`, and hybrid columns must start with `hybA_` and `hybB_`
   - Both parents and hybrid can each take one or more replicates
+  - The script can also make inference on cis/trans patterns in a control/treatment experimental setup, e.g., whether the gene expression levels before and after stress treatment follows a cis or trans regulatory pattern
+    - check this page how to run the script in "differential" mode
   
 * Before running the script it is also recommended to estimate two parameters using DESeq2, the sample-wise `size factor` as well as the gene-wise `dispersion`
   - check this excellent walkthrough and explanation on [what these two parameters mean and how to estimate them with DESeq2](https://hbctraining.github.io/DGE_workshop/lessons/04_DGE_DESeq2_analysis.html)
@@ -32,12 +32,9 @@
     - `gid`: gene ID
     - `prop.p`, `prop.h`: proportion of allele1 expression in the parent and hybrid
     - `reg`: inferred regulatory pattern, one of `conserved`, `cis`, `trans`, `cis+trans` or `unexpected`
-
-```
+  - detailed script usage
+    ```
  $ ./cis_trans.R -h
-NULL
-Warning message:
-package ‘argparse’ was built under R version 4.0.3
 usage: ./cis_trans.R [-h] [--mode MODE] [--min_rc MIN_RC] [--n_cpu N_CPU]
                      f_rc f_sf f_dsp fo
 
@@ -58,4 +55,4 @@ optional arguments:
                    10]
   --n_cpu N_CPU    number of CPUs / threads to use for parallel processing
                    (for spped up if you have many genes) [default: 1]
-```
+    ```
