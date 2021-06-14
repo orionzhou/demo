@@ -23,7 +23,7 @@
     cd /datalus/weiyu/git/nf
     git pull
 
-### Create a conda environment named `rnaseq` to run the pipeline:
+### Create a conda environment named `rnaseq` and required software:
 
     conda create -n rnaseq
     conda env list
@@ -43,7 +43,7 @@ Add these environmental variables (with necessary modification) to your `~/.bash
 
 Log out and log in again (or run `source ~/.bashrc`) to make these variables into effect
 
-Copy the test pipeline (`$NXF_HOME/test/rnaseq`) to wherever you'd like to take a try:
+Create a working directory (e.g., `~/rnaseq_test`) to run a test pipeline (`$NXF_HOME/test/rnaseq`):
 
     cp -rf $NXF_HOME/test/rnaseq /datalus/weiyu/rnaseq_test
     cd ~/rnaseq_test
@@ -51,10 +51,10 @@ Copy the test pipeline (`$NXF_HOME/test/rnaseq`) to wherever you'd like to take 
     # genomes.yml nextflow.config  design.tsv  design.xlsx
 
 Make necessary changes to:
-- `design.tsv` which contains paths to your fastq sequences
 - `nextflow.config`: in particular, `launchDir=XXX` and `email_on_fail=123@gmail.com`
+- `design.tsv` which contains paths to your fastq sequences
 - genome index configuration file `genomes.yml`
 
-Finally, (inside this directory) we are set to run the test pipeline using existing genome database on MSI-mesabi queue:
+Finally, (inside this directory) type the following command run the test pipeline using existing genome indices:
 
     nextflow run $NXF_HOME/rnaseq -params-file genomes.yml -profile conda
