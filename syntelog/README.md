@@ -21,11 +21,13 @@
 - optionally, provide a BED file containing coordinates for highlight
   - [example BED file](test.bed) containing motif coordinates to mark
   - Motif positions can be obtained using a wrapper script [fimo.py](https://github.com/orionzhou/nf/blob/master/bin/mmm/fimo.py) that runs [FIMO](https://meme-suite.org/meme/tools/fimo) internally:
-
+    ```
     fimo.py locate --motif b01_l002_5 /home/springer/zhoux379/stress/data/41_ml/00_nf/03_motif_lists/b01.meme test.fa test.bed
-
+    ```
 - R data file containing gene structure information for provided orthologs
-  - pre-made file available for maize B73v4-anchored ortholog structures: `/home/springer/zhoux379/projects/genome/data2/syntelog/maize.genes.v4.rds`
+  - pre-made file available for:
+    - maize B73v4-anchored ortholog structures: `/home/springer/zhoux379/projects/genome/data2/syntelog/maize.genes.v4.rds`
+    - maize B73v5-anchored ortholog structures: `/home/springer/zhoux379/projects/genome/data2/syntelog/maize.genes.v5.rds`
 
 Finally, run the synteny visualization script:
 
@@ -50,7 +52,7 @@ optional arguments:
   -h, --help       show this help message and exit
   --gid GID        gene ID used to extract structure info [default: test gene]
   --gene GENE      R data file containing gene structure information for
-                   provided orthologs [default: /datalus/weiyu/projects/genome
+                   provided orthologs [default: /home/springer/zhoux379/projects/genome
                    /data2/syntelog/maize.genes.v4.rds]
   --width WIDTH    figure width [default: 7]
   --height HEIGHT  figure height [default: 6]
