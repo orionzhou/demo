@@ -27,7 +27,7 @@
 
     conda create -n rnaseq
     conda env list
-    # you should now see a new environment named "rnaseq"
+    # there should now be a new environment named "rnaseq"
     conda activate rnaseq
     mamba install parallel sra-tools pigz fastqc trim-galore bwa hisat2 star picard samtools bcftools bedtools bamtools pysam sambamba preseq alfred bioawk biopython deeptools qualimap bioconductor-limma r-gplots kallisto minimap2 numpy pandas perl plotly pyfaidx pybigwig ucsc-bedgraphtobigwig subread r-base r-tidyverse r-glue r-argparse r-purrr r-readr r-readxl rseqc bioconductor-dupradar bioconductor-edger bioconductor-deseq2 salmon stringtie multiqc
 

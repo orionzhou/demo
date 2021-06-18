@@ -10,7 +10,7 @@
 
     conda create -n synteny
     conda env list
-    # you should now see a new environment named "synteny"
+    # there should now be a new environment named "synteny"
     conda activate synteny
     mamba install muscle bioconductor-biostrings r-tidyverse r-glue r-ggtree r-tidytree r-ggpubr
 
@@ -26,8 +26,8 @@
     ```
 - R data file containing gene structure information for provided orthologs
   - pre-made file available for:
-    - maize B73v4-anchored ortholog structures: `/home/springer/zhoux379/projects/genome/data2/syntelog/maize.genes.v4.rds`
-    - maize B73v5-anchored ortholog structures: `/home/springer/zhoux379/projects/genome/data2/syntelog/maize.genes.v5.rds`
+    - maize B73v4-anchored ortholog structure in 30 maize genotypes: `/home/springer/zhoux379/projects/genome/data2/syntelog/maize.genes.v4.rds`
+    - maize B73v5-anchored ortholog structure in 30 maize genotypes: `/home/springer/zhoux379/projects/genome/data2/syntelog/maize.genes.v5.rds`
 
 Finally, run the synteny visualization script:
 

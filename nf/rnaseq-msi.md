@@ -28,13 +28,13 @@ This can be done either [using an existing environment yml file](https://docs.co
 
     conda env create -n rnaseq -f $NXF_HOME/configs/environments/rnaseq.yml
     conda env list
-    # you should now see a new environment named "rnaseq"
+    # there should now be a new environment named "rnaseq"
 
 or create an empty environment and then manual install the packages:
 
     conda create -n rnaseq
     conda env list
-    # you should now see a new environment named "rnaseq"
+    # there should now be a new environment named "rnaseq"
     conda activate rnaseq
     mamba install parallel sra-tools pigz fastqc trim-galore bwa hisat2 star picard samtools bcftools bedtools bamtools pysam sambamba preseq alfred bioawk biopython deeptools kallisto minimap2 numpy pandas perl plotly pyfaidx pybigwig ucsc-bedgraphtobigwig subread r-base r-tidyverse r-glue r-argparse r-purrr r-readr r-readxl rseqc bioconductor-dupradar bioconductor-edger bioconductor-deseq2 salmon stringtie multiqc
 
