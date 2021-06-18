@@ -8,7 +8,7 @@ ps$add_argument("fp", help="output (PDF) file")
 
 ps$add_argument("--gid", default='test gene', help="gene ID used to extract structure info [default: %(default)s]")
 ps$add_argument("--gene", help="R data file containing gene structure information for provided orthologs [default: %(default)s]",
-    default="/datalus/weiyu/projects/genome/data2/syntelog/maize.genes.v4.rds")
+    default="/home/springer/zhoux379/projects/genome/data2/syntelog/maize.genes.v4.rds")
 ps$add_argument("--width", type='integer', help="figure width [default: %(default)s]", default=7)
 ps$add_argument("--height", type='integer',  help="figure height [default: %(default)s]", default=6)
 args <- ps$parse_args()
