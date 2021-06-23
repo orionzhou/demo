@@ -12,7 +12,7 @@
     conda env list
     # there should now be a new environment named "synteny"
     conda activate synteny
-    mamba install muscle bioconductor-biostrings r-tidyverse r-glue r-ggtree r-tidytree r-ggpubr
+    mamba install muscle bioconductor-biostrings r-tidyverse r-glue  bioconductor-ggtree r-tidytree r-ape r-ggpubr
 
 ### Prepare input files:
 - multi-fasta file containing target sequences
@@ -31,7 +31,7 @@
 
 Finally, run the synteny visualization script:
 
-    ./syntelog.R --gid Zm00001d003460 test.fa test.bed test.pdf
+    ./plot_syntelog.R --gid Zm00001d003460 test.fa test.bed test.pdf
 
 For detailed help:
 
