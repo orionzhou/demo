@@ -3,12 +3,12 @@ suppressPackageStartupMessages(require(argparse))
 
 ps <- ArgumentParser(description = 'Make synteny plot using provided fasta sequences and mark features')
 ps$add_argument("f_fa", help="multi-fasta sequences")
-ps$add_argument("f_bed", default='none', help="BED file containing feature positions to highlight")
 ps$add_argument("fp", help="output (PDF) file")
 
 ps$add_argument("--gid", default='test gene', help="gene ID used to extract structure info [default: %(default)s]")
+ps$add_argument("--bed", default=NULL, help="BED file containing feature positions to highlight")
 ps$add_argument("--gene", help="R data file containing gene structure information for provided orthologs [default: %(default)s]",
-    default="/home/springer/zhoux379/projects/genome/data2/syntelog/maize.genes.v4.rds")
+    default="/home/springer/zhoux379/projects/genome/data2/syntelog/xref.maize.v4.rds")
 ps$add_argument("--width", type='integer', help="figure width [default: %(default)s]", default=7)
 ps$add_argument("--height", type='integer',  help="figure height [default: %(default)s]", default=6)
 args <- ps$parse_args()
@@ -137,12 +137,16 @@ otheme <- function(margin = c(.5,.5,.5,.5),
 }
 read_bed  <- function(f_bed) {
 #{{{
-    bed = read_tsv(f_bed, col_names=c("sid",'beg','end'))
-    if (str_detect(bed$sid[[1]], '%')) {
-        bed = bed %>% separate('sid',c('mid','sid'), sep='%') %>% select(-mid)
+    if (!is.null(f_bed) & file.exists(f_bed)) {
+        bed = read_tsv(f_bed, col_names=c("sid",'beg','end'))
+        if (str_detect(bed$sid[[1]], '%')) {
+            bed = bed %>% separate('sid',c('mid','sid'), sep='%') %>% select(-mid)
+        }
+        bed %>% mutate(pos = (beg+end)/2) %>%
+            select(gt=sid, beg, end, pos)
+    } else {
+        tibble()
     }
-    bed %>% mutate(pos = (beg+end)/2) %>%
-        select(gt=sid, beg, end, pos)
 #}}}
 }
 msa_tree <- function(seqs) {
