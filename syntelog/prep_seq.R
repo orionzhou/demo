@@ -46,9 +46,10 @@ prep_coord <- function(ti, opt='cds') {
             mutate(start = start-1000, end = end+1000) %>%
             select(chrom, start, end, srd)
     } else if (opt == 'tss+2k') {
-        tb = ti %>% group_by(chrom, srd) %>%
-            summarise(tss = ifelse(srd=='-', max(end), min(start))) %>% ungroup() %>%
-            mutate(tss = tss - 1) %>%
+        cb = min(ti$start); ce = max(ti$end)
+        tss = ifelse(srd=='-', ce, cb)
+        tb = ti %>% slice(1) %>%
+            mutate(tss = !!tss - 1) %>%
             mutate(start = tss-2000, end = tss+2000) %>% mutate(start = start + 1) %>%
             select(chrom, start, end, srd)
     } else {
