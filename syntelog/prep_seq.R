@@ -9,7 +9,7 @@ ps$add_argument("--opt", help="range options [default: %(default)s]",
     default="cds")
 ps$add_argument("--gene", help="R data file containing gene structure information for provided orthologs [default: %(default)s]",
     default="/datalus/weiyu/projects/genome/data2/syntelog/xref.maize.v4.rds")
-ps$add_argument("--gcfg", help="genome configure file (yml)", 
+ps$add_argument("--gcfg", help="genome configure file (yml) [default: %(default)s]", 
     default="/datalus/weiyu/projects/genome/nf/genomes.yml")
 args <- ps$parse_args()
 
@@ -25,29 +25,35 @@ opt = args$opt
 
 prep_coord <- function(ti, opt='cds') {
     #{{{
+    srds = unique(ti$srd)
+    stopifnot(length(srds) == 1)
+    srd = srds[1]
     if (opt == 'cds') {
         tb = ti %>% filter(etype=='CDS') %>%
             select(chrom, start, end, srd)
     } else if (opt == 'genomic') {
-        tb = ti %>% group_by(1) %>%
+        tb = ti %>% group_by(chrom, srd) %>%
             summarise(start = min(start), end = max(end)) %>%
             select(chrom, start, end, srd)
     } else if (opt == 'genomic+2k') {
-        tb = ti %>% group_by(1) %>%
+        tb = ti %>% group_by(chrom, srd) %>%
             summarise(start = min(start), end = max(end)) %>%
             mutate(start = start-2000, end = end+2000) %>%
             select(chrom, start, end, srd)
     } else if (opt == 'genomic+1k') {
-        tb = ti %>% group_by(1) %>%
+        tb = ti %>% group_by(chrom, srd) %>%
             summarise(start = min(start), end = max(end)) %>%
             mutate(start = start-1000, end = end+1000) %>%
+            select(chrom, start, end, srd)
+    } else if (opt == 'tss+2k') {
+        tb = ti %>% group_by(chrom, srd) %>%
+            summarise(tss = ifelse(srd=='-', max(end), min(start))) %>% ungroup() %>%
+            mutate(tss = tss - 1) %>%
+            mutate(start = tss-2000, end = tss+2000) %>% mutate(start = start + 1) %>%
             select(chrom, start, end, srd)
     } else {
         stop(glue("unknown seq option: {opt}\n"))
     }
-    srds = unique(tb$srd)
-    stopifnot(length(srds) == 1)
-    srd = srds[1]
     if (srd == '-') {
         tb %>% arrange(chrom, desc(start))
     } else {

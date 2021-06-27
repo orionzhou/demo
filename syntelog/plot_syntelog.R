@@ -6,9 +6,11 @@ ps$add_argument("f_fa", help="multi-fasta sequences")
 ps$add_argument("fp", help="output (PDF) file")
 
 ps$add_argument("--gid", default='test gene', help="gene ID used to extract structure info [default: %(default)s]")
+ps$add_argument("--opt", help="range options [default: %(default)s]", default="genomic+2k")
 ps$add_argument("--bed", default=NULL, help="BED file containing feature positions to highlight")
 ps$add_argument("--gene", help="R data file containing gene structure information for provided orthologs [default: %(default)s]",
     default="/home/springer/zhoux379/projects/genome/data2/syntelog/xref.maize.v4.rds")
+#ps$add_argument("--cpu", type='integer', help="cpu/core to use for running muscle [default: %(default)s]", default=1)
 ps$add_argument("--width", type='integer', help="figure width [default: %(default)s]", default=7)
 ps$add_argument("--height", type='integer',  help="figure height [default: %(default)s]", default=6)
 args <- ps$parse_args()
@@ -137,29 +139,25 @@ otheme <- function(margin = c(.5,.5,.5,.5),
 }
 read_bed  <- function(f_bed) {
 #{{{
-    if (!is.null(f_bed) & file.exists(f_bed)) {
-        bed = read_tsv(f_bed, col_names=c("sid",'beg','end'))
-        if (str_detect(bed$sid[[1]], '%')) {
-            bed = bed %>% separate('sid',c('mid','sid'), sep='%') %>% select(-mid)
-        }
-        bed %>% mutate(pos = (beg+end)/2) %>%
-            select(gt=sid, beg, end, pos)
-    } else {
-        tibble()
+    bed = read_tsv(f_bed, col_names=c("sid",'beg','end'))
+    if (str_detect(bed$sid[[1]], '%')) {
+        bed = bed %>% separate('sid',c('mid','sid'), sep='%') %>% select(-mid)
     }
+    bed %>% mutate(pos = (beg+end)/2) %>%
+        select(gt=sid, beg, end, pos)
 #}}}
 }
 msa_tree <- function(seqs) {
     #{{{
     pre = glue("tmp.msa.{sample(10000, 1)}")
     writeXStringSet(seqs, glue('{pre}.fa'))
-    system(glue("muscle -in {pre}.fa -out {pre}.2.fa -tree2 {pre}.2.nwk"))
+    system(glue("muscle -in {pre}.fa -out {pre}.2.fa -tree1 {pre}.2.nwk -maxiters 1"))
     msa = readDNAMultipleAlignment(filepath=glue("{pre}.2.fa"), format='fasta')
     tree = read.tree(glue("{pre}.2.nwk"))
     labs = with(subset(fortify(tree), isTip), label[order(y, decreasing=T)])
     nl = length(labs)
-    ty = tibble(lab = labs, y = nl:1) %>%
-        separate(lab, c('gt','extra'), sep='_', remove=F) %>%
+    ty = tibble(gt = labs, y = nl:1) %>%
+        mutate(lab = str_replace(gt, '^Zmays_', '')) %>%
         select(gt, lab, y)
     #
     system(glue("rm {pre}.*"))
@@ -203,19 +201,19 @@ make_syn  <- function(name1, name2, seqs) {
     list(aln = j, mm = mm)
     #}}}
 }
-plot_syn <- function(ty, seqs) {
+plot_syn <- function(ty, seqs, opt) {
     #{{{
     #{{{ prepare syn tible
-    labs = ty %>% arrange(desc(y)) %>% pull(lab)
-    to = tibble(tgt=labs[1:nrow(ty)-1], qry=labs[2:nrow(ty)]) %>%
+    gts = ty %>% arrange(desc(y)) %>% pull(gt)
+    to = tibble(tgt=gts[1:nrow(ty)-1], qry=gts[2:nrow(ty)]) %>%
         mutate(x = map2(tgt,qry, make_syn, seqs=seqs)) %>%
         mutate(syn = map(x, 'aln'), mm = map(x, 'mm')) %>%
         select(tgt, qry, syn, mm)
     #
     tp = to %>% select(tgt,qry,syn) %>% unnest(syn) %>%
         filter(v == '*') %>%
-        inner_join(ty %>% select(lab,y), by=c('tgt'='lab')) %>% rename(y1=y) %>%
-        inner_join(ty %>% select(lab,y), by=c('qry'='lab')) %>% rename(y2=y) %>%
+        inner_join(ty %>% select(gt,y), by=c('tgt'='gt')) %>% rename(y1=y) %>%
+        inner_join(ty %>% select(gt,y), by=c('qry'='gt')) %>% rename(y2=y) %>%
         mutate(tBeg=tBeg + 1, qBeg = qBeg + 1) %>%
         mutate(i = 1:n())
     tp1 = tp %>% select(i, y=y1, tBeg, tEnd) %>%
@@ -226,33 +224,56 @@ plot_syn <- function(ty, seqs) {
     tp = tp1 %>% rbind(tp2) %>% mutate(i2 = coordmap[type]) %>% arrange(i, i2)
     #}}}
     #
+    if(opt == "genomic+2k") {
+        xbrks=c(0,2e3); xlabs=c('-2k','TSS')
+    } else if(opt == "genomic+1k") {
+        xbrks=c(0,1e3); xlabs=c('-1k','TSS')
+    } else if(opt == 'tss+2k') {
+        xbrks=c(0,2e3,4e3); xlabs=c('-2k','TSS','+2k')
+    } else {
+        stop(glue("unknown seq option: {opt}\n"))
+    }
     p_syn = ggplot(tp) +
         geom_polygon(aes(x=pos,y=y,group=i), fill='royalblue', alpha=.2,
                      size=0,color=NA) +
-        coord_cartesian(xlim = c(0,4000)) +
-        scale_x_continuous(breaks=c(0,2000,4000), labels=c('-2k','TSS','+2k'),
-                           expand=expansion(mult=c(.01,.02)), position='top') +
-        scale_y_continuous(breaks=ty$y, labels=ty$gt, expand=expansion(mult=c(.01,.01))) +
+        #coord_cartesian(xlim = c(0,4000)) +
+        scale_x_continuous(breaks=xbrks, labels=xlabs,
+                           expand=expansion(mult=c(.01,.01)), position='top') +
+        scale_y_continuous(breaks=ty$y, labels=ty$lab, expand=expansion(mult=c(.01,.01))) +
         otheme(xtext=T,xtick=T,ytext=T,ytick=T, panel.border=F,
             margin=c(.2,.5,.2,0))
     p_syn
     #}}}
 }
-add_gene_track <- function(gid, tg, ty, p, ht.exon=.05, ht.cds=.1) {
+add_gene_track <- function(gid, opt, max_size, tg, ty, p, ht.exon=.05, ht.cds=.1) {
     #{{{
-    tg1 = tg %>% filter(gid==!!gid) %>% inner_join(ty, by='gt') %>%
-        mutate(beg = beg+2000, end = end+2000)
-    tgr = tg1 %>% group_by(gt, gid,y) %>%
+    tg1 = tg %>% filter(gid==!!gid) %>% select(gt, gene) %>% unnest(gene) %>%
+        group_by(gt, srd) %>%
+        mutate(tss = ifelse(srd=='-', max(end), min(start))) %>% ungroup() %>%
+        mutate(rb = ifelse(srd=='-', tss-end+1, start-tss+1)) %>%
+        mutate(re = ifelse(srd=='-', tss-start+1, end-tss+1)) %>%
+        select(-start, -end) %>% rename(beg=rb, end=re) %>%
+        inner_join(ty, by='gt')
+    if(str_detect(opt, "\\+2k$")) {
+        tg1 = tg1 %>% mutate(beg = beg+2000, end = end+2000)
+    } else if(str_detect(opt, "\\+1k$")) {
+        tg1 = tg1 %>% mutate(beg = beg+1000, end = end+1000)
+    } else {
+        stop(glue("unknown seq option: {opt}\n"))
+    }
+    tgr = tg1 %>% group_by(gt, y) %>%
         summarise(beg=min(beg), end=max(end)) %>% ungroup()
-    tge = tg1 %>% filter(type=='exon')
-    tgc = tg1 %>% filter(type=='CDS')
+    tge = tg1 %>% filter(etype=='exon')
+    tgc = tg1 %>% filter(etype=='CDS')
     col.intron='grey'; col.exon='grey'; col.cds='royalblue'
     arw = arrow(length=unit(.1,'cm'), angle=30, ends='last',type="open")
+    arw.beg = ifelse(str_detect(opt, "\\+1k"), 1e3, 2e3)
+    arw.end = arw.beg + max_size/40
     p +
         geom_segment(data=tgr,aes(x=beg,xend=end,y=y,yend=y),col=col.intron,size=.5) +
         geom_rect(data=tge,aes(xmin=beg,xmax=end,ymin=y-ht.exon,ymax=y+ht.exon),fill=col.exon,color=NA,alpha=1) +
         geom_rect(data=tgc,aes(xmin=beg,xmax=end,ymin=y-ht.cds,ymax=y+ht.cds),fill=col.cds,color=NA,alpha=1) +
-        geom_segment(data=tgr,aes(x=2000,xend=2100,y=y+ht.cds*1.1,yend=y+ht.cds*1.1),
+        geom_segment(data=tgr,aes(x=arw.beg,xend=arw.end,y=y+ht.cds*1.1,yend=y+ht.cds*1.1),
                      color='black', size=.2, arrow=arw) +
         geom_rect(xmin=1999,xmax=2001,ymin=-Inf,ymax=Inf, fill='yellow', alpha=.2)
     #}}}
@@ -269,8 +290,10 @@ plot_title <- function(gid, gname=NA,gnote=NA, font.size=3) {
     p02
     #}}}
 }
-combo_plot  <- function(gid, ty, seqs, bed, tree, tg) {
+combo_plot  <- function(gid, ty, seqs, opt, f_bed, tree, tg) {
     #{{{
+    tl = tibble(gt=names(seqs), size=width(seqs))
+    max_size = max(tl$size)
     p0 = plot_title(gid, font.size=3)
     # tree plot
     ty2 = ty %>% select(taxa=lab, gt)
@@ -280,13 +303,16 @@ combo_plot  <- function(gid, ty, seqs, bed, tree, tg) {
         scale_y_continuous(expand=expansion(mult=c(.01,.05))) +
         otheme(panel.border=F, margin=c(.2,.2,.2,0))
     #
-    p1 = plot_syn(ty, seqs)
-    mtf2 = bed %>% inner_join(ty, by='gt')
+    p1 = plot_syn(ty, seqs, opt)
+    pg = add_gene_track(gid,opt,max_size,tg,ty,p1)
     #umr2 = umr %>% inner_join(ty, by='gt')
-    pg = add_gene_track(gid,tg,ty,p1) +
         #geom_segment(data=umr2, aes(x=start,xend=end,y=y-.1,yend=y-.1), color='green',
                      #size=.5, alpha=1) +
-        geom_point(data=mtf2,aes(x=pos, y=y-.1),col='red',size=1)
+    if (!is.null(f_bed)) {
+        bed = read_bed(f_bed)
+        mtf2 = bed %>% inner_join(ty, by='gt')
+        pg = pg + geom_point(data=mtf2,aes(x=pos, y=y-.1),col='red',size=1)
+    }
     #
     #p_lfc = plot_lfc(gid, ty, lfc)
     #
@@ -303,8 +329,7 @@ tg = readRDS(f_gene)
 seqs = readDNAStringSet(f_fa)
 x = msa_tree(seqs)
 msa = x$msa; tree = x$tree; ty = x$ty
-bed = read_bed(f_bed)
-p = combo_plot(gid, ty, seqs, bed, tree, tg)
+p = combo_plot(gid, ty, seqs, args$opt, f_bed, tree, tg)
 p %>% ggexport(filename=fp, width=wd, height=ht)
 
 
