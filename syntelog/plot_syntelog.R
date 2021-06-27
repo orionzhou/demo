@@ -2,8 +2,8 @@
 suppressPackageStartupMessages(require(argparse))
 
 ps <- ArgumentParser(description = 'Make synteny plot using provided fasta sequences and mark features')
-ps$add_argument("f_fa", help="multi-fasta sequences")
-ps$add_argument("fp", help="output (PDF) file")
+ps$add_argument("fi", help="multi-fasta sequences")
+ps$add_argument("fo", help="output (PDF) file")
 
 ps$add_argument("--gid", default='test gene', help="gene ID used to extract structure info [default: %(default)s]")
 ps$add_argument("--opt", help="range options [default: %(default)s]", default="genomic+2k")
@@ -15,10 +15,9 @@ ps$add_argument("--width", type='integer', help="figure width [default: %(defaul
 ps$add_argument("--height", type='integer',  help="figure height [default: %(default)s]", default=6)
 args <- ps$parse_args()
 
-f_fa = args$f_fa
-f_bed = args$f_bed
-fp = args$fp
-gid = args$gid; f_gene = args$gene
+fi = args$fi; fo = args$fo
+f_bed = args$bed
+gid = args$gid; opt=args$opt; f_gene = args$gene
 wd = args$width; ht = args$height
 
 #{{{ read & functions
@@ -151,12 +150,17 @@ msa_tree <- function(seqs) {
     #{{{
     pre = glue("tmp.msa.{sample(10000, 1)}")
     writeXStringSet(seqs, glue('{pre}.fa'))
-    system(glue("muscle -in {pre}.fa -out {pre}.2.fa -tree1 {pre}.2.nwk -maxiters 1"))
-    msa = readDNAMultipleAlignment(filepath=glue("{pre}.2.fa"), format='fasta')
+    #system(glue("muscle -in {pre}.fa -out {pre}.2.fa -tree2 {pre}.2.nwk -maxiters 2"))
+    #system(glue("clustalo -i {pre}.fa -o {pre}.2.fa --guidetree-out={pre}.2.nwk --iter=1 --threads {args$cpu}"))
+    system(glue("mafft --retree 0 --treeout --localpair {pre}.fa > {pre}.2.fa"))
+    system(glue("mv {pre}.fa.tree {pre}.2.nwk"))
+    #msa = readDNAMultipleAlignment(filepath=glue("{pre}.2.fa"), format='fasta')
+    msa = NA
     tree = read.tree(glue("{pre}.2.nwk"))
     labs = with(subset(fortify(tree), isTip), label[order(y, decreasing=T)])
     nl = length(labs)
     ty = tibble(gt = labs, y = nl:1) %>%
+        separate(gt, c('i','gt'), extra='merge', sep='_') %>%
         mutate(lab = str_replace(gt, '^Zmays_', '')) %>%
         select(gt, lab, y)
     #
@@ -201,7 +205,7 @@ make_syn  <- function(name1, name2, seqs) {
     list(aln = j, mm = mm)
     #}}}
 }
-plot_syn <- function(ty, seqs, opt) {
+plot_syn <- function(ty, seqs, opt, max_size) {
     #{{{
     #{{{ prepare syn tible
     gts = ty %>% arrange(desc(y)) %>% pull(gt)
@@ -225,18 +229,18 @@ plot_syn <- function(ty, seqs, opt) {
     #}}}
     #
     if(opt == "genomic+2k") {
-        xbrks=c(0,2e3); xlabs=c('-2k','TSS')
+        xbrks=c(0,2e3); xlabs=c('-2k','TSS'); xmax = max_size
     } else if(opt == "genomic+1k") {
-        xbrks=c(0,1e3); xlabs=c('-1k','TSS')
+        xbrks=c(0,1e3); xlabs=c('-1k','TSS'); xmax = max_size
     } else if(opt == 'tss+2k') {
-        xbrks=c(0,2e3,4e3); xlabs=c('-2k','TSS','+2k')
+        xbrks=c(0,2e3,4e3); xlabs=c('-2k','TSS','+2k'); xmax = 4000
     } else {
         stop(glue("unknown seq option: {opt}\n"))
     }
     p_syn = ggplot(tp) +
         geom_polygon(aes(x=pos,y=y,group=i), fill='royalblue', alpha=.2,
                      size=0,color=NA) +
-        #coord_cartesian(xlim = c(0,4000)) +
+        coord_cartesian(xlim = c(0,xmax)) +
         scale_x_continuous(breaks=xbrks, labels=xlabs,
                            expand=expansion(mult=c(.01,.01)), position='top') +
         scale_y_continuous(breaks=ty$y, labels=ty$lab, expand=expansion(mult=c(.01,.01))) +
@@ -303,16 +307,16 @@ combo_plot  <- function(gid, ty, seqs, opt, f_bed, tree, tg) {
         scale_y_continuous(expand=expansion(mult=c(.01,.05))) +
         otheme(panel.border=F, margin=c(.2,.2,.2,0))
     #
-    p1 = plot_syn(ty, seqs, opt)
-    pg = add_gene_track(gid,opt,max_size,tg,ty,p1)
-    #umr2 = umr %>% inner_join(ty, by='gt')
-        #geom_segment(data=umr2, aes(x=start,xend=end,y=y-.1,yend=y-.1), color='green',
-                     #size=.5, alpha=1) +
+    p1 = plot_syn(ty, seqs, opt, max_size)
     if (!is.null(f_bed)) {
         bed = read_bed(f_bed)
         mtf2 = bed %>% inner_join(ty, by='gt')
-        pg = pg + geom_point(data=mtf2,aes(x=pos, y=y-.1),col='red',size=1)
+        p1 = p1 + geom_point(data=mtf2,aes(x=pos, y=y-.1),col='red',size=1)
+        #umr2 = umr %>% inner_join(ty, by='gt')
+        #geom_segment(data=umr2, aes(x=start,xend=end,y=y-.1,yend=y-.1), color='green',
+                     #size=.5, alpha=1) +
     }
+    pg = add_gene_track(gid,opt,max_size,tg,ty,p1)
     #
     #p_lfc = plot_lfc(gid, ty, lfc)
     #
@@ -326,10 +330,10 @@ combo_plot  <- function(gid, ty, seqs, opt, f_bed, tree, tg) {
 #}}}
 tg = readRDS(f_gene)
 
-seqs = readDNAStringSet(f_fa)
+seqs = readDNAStringSet(fi)
 x = msa_tree(seqs)
 msa = x$msa; tree = x$tree; ty = x$ty
-p = combo_plot(gid, ty, seqs, args$opt, f_bed, tree, tg)
-p %>% ggexport(filename=fp, width=wd, height=ht)
+p = combo_plot(gid, ty, seqs, opt, f_bed, tree, tg)
+p %>% ggexport(filename=fo, width=wd, height=ht)
 
 

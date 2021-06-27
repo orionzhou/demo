@@ -12,7 +12,7 @@
     conda env list
     # there should now be a new environment named "synteny"
     conda activate synteny
-    mamba install muscle bioconductor-biostrings r-tidyverse r-glue  bioconductor-ggtree r-tidytree r-ape r-ggpubr
+    mamba install mafft bioconductor-biostrings r-tidyverse r-glue bioconductor-ggtree r-tidytree r-ape r-ggpubr
 
 ### Prepare input files:
 - multi-fasta file containing target sequences
@@ -29,32 +29,34 @@
   - pre-made file available for:
     - maize B73v4-anchored ortholog structure in 30 maize genotypes: `/home/springer/zhoux379/projects/genome/data2/syntelog/xref.maize.v4.rds`
     - maize B73v5-anchored ortholog structure in 30 maize genotypes: `/home/springer/zhoux379/projects/genome/data2/syntelog/xref.maize.v5.rds`
+    - wheat CS-D-anchored ortholog structure in 30 maize genotypes: `/datalus/weiyu/projects/genome/data2/syntelog/xref.wheat.csd.rds`
 
 Finally, run the synteny visualization script:
 
-    ./plot_syntelog.R --gid Zm00001d003460 test.fa test.bed test.pdf
+    ./plot_syntelog.R --gid Zm00001d003460 --bed test2.bed test2.fa test2.pdf
 
 For detailed help:
 
 ```bash
 (synteny) pzhou@sugon1:syntelog $ ./plot_syntelog.R -h
-usage: ./plot_syntelog.R [-h] [--gid GID] [--gene GENE] [--width WIDTH]
-                         [--height HEIGHT]
-                         f_fa f_bed fp
+usage: ./plot_syntelog.R [-h] [--gid GID] [--opt OPT] [--bed BED]
+                         [--gene GENE] [--width WIDTH] [--height HEIGHT]
+                         fi fo
 
 Make synteny plot using provided fasta sequences and mark features
 
 positional arguments:
-  f_fa             multi-fasta sequences
-  f_bed            BED file containing feature positions to highlight
-  fp               output (PDF) file
+  fi               multi-fasta sequences
+  fo               output (PDF) file
 
 optional arguments:
   -h, --help       show this help message and exit
   --gid GID        gene ID used to extract structure info [default: test gene]
+  --opt OPT        range options [default: genomic+2k]
+  --bed BED        BED file containing feature positions to highlight
   --gene GENE      R data file containing gene structure information for
-                   provided orthologs [default: /home/springer/zhoux379/projects/genome
-                   /data2/syntelog/maize.genes.v4.rds]
+                   provided orthologs [default: /home/springer/zhoux379/projec
+                   ts/genome/data2/syntelog/xref.maize.v4.rds]
   --width WIDTH    figure width [default: 7]
   --height HEIGHT  figure height [default: 6]
 ```
