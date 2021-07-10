@@ -36,7 +36,7 @@ or create an empty environment and then manual install the packages:
     conda env list
     # there should now be a new environment named "rnaseq"
     conda activate rnaseq
-    mamba install parallel sra-tools pigz fastqc trim-galore bwa hisat2 star picard samtools bcftools bedtools bamtools pysam sambamba preseq alfred bioawk biopython deeptools kallisto minimap2 numpy pandas perl plotly pyfaidx pybigwig ucsc-bedgraphtobigwig subread r-base r-tidyverse r-glue r-argparse r-purrr r-readr r-readxl rseqc bioconductor-dupradar bioconductor-edger bioconductor-deseq2 salmon stringtie multiqc
+    mamba install parallel sra-tools pigz fastqc trim-galore bwa hisat2 star picard samtools bcftools bedtools bamtools pysam sambamba jcvi preseq alfred bioawk biopython deeptools qualimap bioconductor-limma r-gplots kallisto minimap2 numpy pandas perl plotly pyfaidx pybigwig ucsc-bedgraphtobigwig subread r-base r-tidyverse r-glue r-argparse r-purrr r-readr r-readxl rseqc bioconductor-dupradar bioconductor-edger bioconductor-deseq2 salmon stringtie multiqc
 
 ### Post set-up
 Add these environmental variables (with necessary modification) to your `~/.bashrc` or `~/.bash_profile`

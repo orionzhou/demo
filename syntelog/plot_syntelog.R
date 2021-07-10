@@ -328,6 +328,120 @@ combo_plot  <- function(gid, ty, seqs, opt, f_bed, tree, tg) {
     #}}}
 }
 #}}}
+
+#{{{ characterize motif variation
+mtf_aln  <- function(n1, n2, tb, te, seqs) {
+    #{{{
+    cat(n1, n2, '\n')
+    pw = pairwiseAlignment(seqs[[n1]],seqs[[n2]], type='local')
+    toff = start(pattern(pw)); qoff = start(subject(pw))
+    y1 = as.character(pattern(pw))
+    y2 = as.character(subject(pw))
+    h0 = as.character(compareStrings(y2,y1))
+    h = str_replace_all(h0, "[ATCGN?]", '*')
+    h2=unlist(strsplit(h, split = ""))
+    j = tibble(v = rle(h2)$values, aSize = rle(h2)$lengths) %>%
+        mutate(aEnd=cumsum(aSize), aBeg = aEnd-aSize) %>%
+        mutate(tSize = ifelse(v=='+', 0, aSize)) %>%
+        mutate(qSize = ifelse(v=='-', 0, aSize)) %>%
+        mutate(tEnd=cumsum(tSize), tBeg=tEnd-tSize) %>%
+        mutate(qEnd=cumsum(qSize), qBeg=qEnd-qSize) %>%
+        select(v, aBeg,aEnd,aSize,tBeg,tEnd,tSize,qBeg,qEnd,qSize) %>%
+        mutate(tBeg = toff+tBeg-1, tEnd=tBeg+tSize) %>%
+        mutate(qBeg = qoff+qBeg-1, qEnd=qBeg+qSize)
+    get_tpos <- function(v, aSize, tBeg, tEnd)
+        ifelse(v=='+', list(rep(tBeg, aSize)), list((tBeg+1):tEnd))
+    get_qpos <- function(v, aSize, qBeg, qEnd)
+        ifelse(v=='-', list(rep(qBeg, aSize)), list((qBeg+1):qEnd))
+    j2 = j %>%
+        mutate(tpos = pmap(list(v, aSize, tBeg, tEnd), get_tpos)) %>%
+        mutate(qpos = pmap(list(v, aSize, qBeg, qEnd), get_qpos))
+    tposs = unlist(j2$tpos)
+    qposs = unlist(j2$qpos)
+    mm = str_locate_all(h0, "\\?")[[1]] %>% as_tibble() %>%
+        mutate(qPos = qposs[start], tPos = tposs[start]) %>%
+        select(aPos=start,tPos,qPos)
+    ab = which(tposs == tb)[1] 
+    ae = which(tposs == te)[1] 
+    tseq = str_sub(y1, ab, ae); qseq=str_sub(y2,ab,ae)
+    mm1 = mm %>% filter(aPos >= ab, aPos <= ae)
+    if(nrow(mm1) > 0) {
+        for (i in 1:nrow(mm1)) {
+            mp = mm1$aPos[i] - ab + 1
+            str_sub(qseq,mp,mp) <- str_to_lower(str_sub(qseq,mp,mp))
+        }
+    }
+    qb=qposs[ab]; qe=qposs[ae]
+    ins=str_count(tseq,'-')
+    del=str_count(qseq,'-')
+    tibble(tseq=tseq,qseq=qseq,qb=qb,qe=qe, mm=nrow(mm1),ins=ins,del=del)
+    #}}}
+}
+make_msa <- function(seqs) {
+    #{{{
+    pre = glue("tmp.msa.{sample(10000, 1)}")
+    writeXStringSet(seqs, glue('{pre}.fa'))
+    system(glue("muscle -in {pre}.fa -out {pre}.2.fa"))
+    msa = readDNAMultipleAlignment(filepath=glue("{pre}.2.fa"), format='fasta')
+    msa = DNAStringSet(msa)
+    #
+    system(glue("rm {pre}.*"))
+    msa
+    #}}}
+}
+mark_mm  <- function(tseq, qseq) {
+    #{{{ mark mismatch and indel in query seqs
+    h0 = as.character(compareStrings(qseq,tseq))
+    h2 = unlist(strsplit(h0, split = ""))
+    th2 = tibble(p=1:length(h2), op = h2) %>%
+        filter(op %in% c("?", "+"))
+    if (nrow(th2) > 0) {
+        for (p in th2$p) {
+            str_sub(qseq,p,p) <- str_to_lower(str_sub(qseq,p,p))
+        }
+    }
+    qseq
+    #}}}
+}
+check_mtf <- function(j, mtf, seqs, gts) {
+    #{{{
+    mtf0 = mtf %>% mutate(dst = abs(pos-2000)) %>% arrange(dst)
+    i=1; gt0 = mtf0$gt[[i]]; b0 = mtf0$beg[[i]]; e0 = mtf0$end[[i]]
+    seq0 = seqs[[gt0]][b0:e0]
+    aln = tibble(gt0=!!gt0, gt1=gts[! gts %in% gt0]) %>%
+        filter(gt1 %in% names(seqs)) %>%
+        mutate(tb=b0, te=e0) %>%
+        mutate(x = pmap(list(gt0,gt1,tb,te), mtf_aln, seqs=seqs)) %>%
+        unnest(x)
+    #
+    aln_na = aln %>% filter(is.na(tseq))
+    aln2 = aln %>% filter(!is.na(tseq))
+    if (length(unique(aln2$tseq)) > 1) {
+        ss = aln2 %>% select(gt=gt1, seq=qseq) %>%
+            bind_rows(aln2 %>% dplyr::slice(1) %>% select(gt=gt0, seq=tseq)) %>%
+            mutate(seq=str_replace(seq,'-',''))
+        ss0 = ss$seq; names(ss0) = ss$gt
+        ss1 = DNAStringSet(ss0)
+        ss2 = make_msa(ss1)
+        ss3 = as.character(ss2)
+        aln2 = aln2 %>% mutate(tseq = ss3[gt0], qseq=ss3[gt1])
+    }
+    aln2 = aln2 %>% mutate(qseq = map2_chr(tseq, qseq, mark_mm))
+    aln2 %>% bind_rows(aln_na) %>% arrange(gt1)
+    #}}}
+}
+var_type <- function(aln) {
+    #{{{
+    aln = aln %>% replace_na(list(mm=0, ins=0, del=1))
+    mm = sum(aln$mm) > 0
+    indel = sum(aln$ins) + sum(aln$del) > 0
+    ifelse(mm, ifelse(indel, 'snp+indel', 'snp'), ifelse(indel, 'indel', 'none'))
+    #}}}
+}
+#aln = check_mtf(j, mtf, seqs, gts)
+#vt = var_type(aln)
+#}}}
+
 tg = readRDS(f_gene)
 
 seqs = readDNAStringSet(fi)
