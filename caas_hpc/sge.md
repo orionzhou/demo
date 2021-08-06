@@ -67,7 +67,7 @@ blastall -p blastn -i test.fa -d wheat.db -o abc.out
 
 ## 交互式任务执行
 
-当希望运行 R 等交互式任务时，可通过 `qlogin -l h\_vmem=xG` 获取计算节点，如：`qlogin  -l h\_vmem=10G，hostname=fatnode4T` ，此命令含义为向对列 `all.q` 申请一个在节点 `fatnode4T`上运行的shell 环境。 当资源紧张时执行qlogin 获取计算节点不成功时，可以设定较小的h_vmem 值获取。
+当希望运行 R 等交互式任务时，可通过 `qlogin -l h_vmem=xG` 获取计算节点，如：`qlogin  -l h_vmem=10G，hostname=fatnode4T` ，此命令含义为向对列 `all.q` 申请一个在节点 `fatnode4T`上运行的shell 环境。 当资源紧张时执行qlogin 获取计算节点不成功时，可以设定较小的h_vmem 值获取。
     
 
 ## 任务查看与管理
