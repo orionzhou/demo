@@ -3,13 +3,15 @@ suppressPackageStartupMessages(require(argparse))
 
 ps <- ArgumentParser(description = 'Make synteny plot using provided fasta sequences and mark features')
 ps$add_argument("fi", help="multi-fasta sequences")
-ps$add_argument("fo", help="output (PDF) file")
+ps$add_argument("fo", help="output (PDF and RDS) file base")
 
 ps$add_argument("--gid", default='test gene', help="gene ID used to extract structure info [default: %(default)s]")
 ps$add_argument("--opt", help="range options [default: %(default)s]", default="genomic+2k")
+ps$add_argument("--aligner", help="alignment software [default: %(default)s]", default="muscle")
 ps$add_argument("--bed", default=NULL, help="BED file containing feature positions to highlight")
 ps$add_argument("--gene", help="R data file containing gene structure information for provided orthologs [default: %(default)s]",
-    default="/home/springer/zhoux379/projects/genome/data2/syntelog/xref.maize.v4.rds")
+    default="/datalus/weiyu/projects/genome/data2/syntelog/xref.maize.v4.rds")
+    #default="/home/springer/zhoux379/projects/genome/data2/syntelog/xref.maize.v4.rds")
 #ps$add_argument("--cpu", type='integer', help="cpu/core to use for running muscle [default: %(default)s]", default=1)
 ps$add_argument("--width", type='integer', help="figure width [default: %(default)s]", default=7)
 ps$add_argument("--height", type='integer',  help="figure height [default: %(default)s]", default=6)
@@ -18,6 +20,7 @@ args <- ps$parse_args()
 fi = args$fi; fo = args$fo
 f_bed = args$bed
 gid = args$gid; opt=args$opt; f_gene = args$gene
+aligner = args$aligner
 wd = args$width; ht = args$height
 
 #{{{ read & functions
@@ -146,21 +149,25 @@ read_bed  <- function(f_bed) {
         select(gt=sid, beg, end, pos)
 #}}}
 }
-msa_tree <- function(seqs) {
+msa_tree <- function(seqs, aligner) {
     #{{{
     pre = glue("tmp.msa.{sample(10000, 1)}")
     writeXStringSet(seqs, glue('{pre}.fa'))
-    #system(glue("muscle -in {pre}.fa -out {pre}.2.fa -tree2 {pre}.2.nwk -maxiters 2"))
-    #system(glue("clustalo -i {pre}.fa -o {pre}.2.fa --guidetree-out={pre}.2.nwk --iter=1 --threads {args$cpu}"))
-    system(glue("mafft --retree 0 --treeout --localpair {pre}.fa > {pre}.2.fa"))
-    system(glue("mv {pre}.fa.tree {pre}.2.nwk"))
-    #msa = readDNAMultipleAlignment(filepath=glue("{pre}.2.fa"), format='fasta')
+    if (aligner == 'muscle') {
+        system(glue("muscle -in {pre}.fa -out {pre}.2.fa -tree2 {pre}.2.nwk -maxiters 2"))
+    } else if (aligner == 'mafft') {
+        system(glue("mafft --retree 0 --treeout --localpair {pre}.fa > {pre}.2.fa"))
+        system(glue("mv {pre}.fa.tree {pre}.2.nwk"))
+    #} else if (aligner == 'clustalo') {
+        #system(glue("clustalo -i {pre}.fa -o {pre}.2.fa --guidetree-out={pre}.2.nwk --iter=1 --threads {args$cpu}"))
+    }
     msa = NA
+    #msa = readDNAMultipleAlignment(filepath=glue("{pre}.2.fa"), format='fasta')
     tree = read.tree(glue("{pre}.2.nwk"))
     labs = with(subset(fortify(tree), isTip), label[order(y, decreasing=T)])
     nl = length(labs)
     ty = tibble(gt = labs, y = nl:1) %>%
-        separate(gt, c('i','gt'), extra='merge', sep='_') %>%
+        #separate(gt, c('i','gt'), extra='merge', sep='_') %>%
         mutate(lab = str_replace(gt, '^Zmays_', '')) %>%
         select(gt, lab, y)
     #
@@ -170,11 +177,11 @@ msa_tree <- function(seqs) {
 }
 make_syn  <- function(name1, name2, seqs) {
     #{{{ extract synteny blocks and mismatch positions from alignment
-    require(Biostrings)
     #x = unmasked(msa)
     #s1 = RemoveGaps(x[name1])[[1]]
     #s2 = RemoveGaps(x[name2])[[1]]
-    pw = pairwiseAlignment(seqs[[name1]], seqs[[name2]], type='local')
+    stopifnot(name1 %in% names(seqs) & name2 %in% names(seqs))
+    pw = pairwiseAlignment(seqs[[name1]], seqs[[name2]], type='local-global')
     toff = start(pattern(pw)); qoff = start(subject(pw))
     y1 = as.character(pattern(pw))
     y2 = as.character(subject(pw))
@@ -294,19 +301,20 @@ plot_title <- function(gid, gname=NA,gnote=NA, font.size=3) {
     p02
     #}}}
 }
-combo_plot  <- function(gid, ty, seqs, opt, f_bed, tree, tg) {
-    #{{{
-    tl = tibble(gt=names(seqs), size=width(seqs))
-    max_size = max(tl$size)
-    p0 = plot_title(gid, font.size=3)
-    # tree plot
+plot_tree <- function(ty, tree, m.t=.2, m.b=.2) {
+    #{{{ tree plot
     ty2 = ty %>% select(taxa=lab, gt)
-    p_tree = ggtree(tree) %<+% ty2 +
+    ggtree(tree) %<+% ty2 +
         #geom_tiplab(aes(label=gt), hjust=0, align=T) +
         scale_x_continuous(expand=expansion(mult=c(.05,.005))) +
         scale_y_continuous(expand=expansion(mult=c(.01,.05))) +
-        otheme(panel.border=F, margin=c(.2,.2,.2,0))
-    #
+        otheme(panel.border=F, margin=c(m.t,.2,m.b,0))
+    #}}}
+}
+plot_aln  <- function(ty, seqs, opt, f_bed, tg) {
+    #{{{
+    tl = tibble(gt=names(seqs), size=width(seqs))
+    max_size = max(tl$size)
     p1 = plot_syn(ty, seqs, opt, max_size)
     if (!is.null(f_bed)) {
         bed = read_bed(f_bed)
@@ -317,14 +325,7 @@ combo_plot  <- function(gid, ty, seqs, opt, f_bed, tree, tg) {
                      #size=.5, alpha=1) +
     }
     pg = add_gene_track(gid,opt,max_size,tg,ty,p1)
-    #
-    #p_lfc = plot_lfc(gid, ty, lfc)
-    #
-    #p_msa = plot_msa(aln, ty)
-    #pb = ggarrange(p_tree, pg, p_msa, p_lfc, nrow=1, ncol=4, widths=c(1,5,.5,1))
-    #pb = ggarrange(p_tree, pg, p_lfc, nrow=1, ncol=3, widths=c(1,5,1))
-    pb = ggarrange(p_tree, pg, nrow=1, ncol=2, widths=c(1,5))
-    ggarrange(p0, pb, nrow=2, heights=c(1,20))
+    pg
     #}}}
 }
 #}}}
@@ -445,9 +446,19 @@ var_type <- function(aln) {
 tg = readRDS(f_gene)
 
 seqs = readDNAStringSet(fi)
-x = msa_tree(seqs)
+x = msa_tree(seqs, aligner)
 msa = x$msa; tree = x$tree; ty = x$ty
-p = combo_plot(gid, ty, seqs, opt, f_bed, tree, tg)
-p %>% ggexport(filename=fo, width=wd, height=ht)
+
+p_title = plot_title(gid, font.size=3)
+p_tree = plot_tree(ty, tree, m.t=.2, m.b=.2)
+p_aln = plot_aln(ty, seqs, opt, f_bed, tg)
+p = ggarrange(p_title,
+              ggarrange(p_tree, p_aln, nrow=1, ncol=2, widths=c(1,5)),
+              nrow=2, heights=c(1,20))
+p %>% ggexport(filename=glue("{args$fo}.pdf"), width=wd, height=ht)
+
+r = list(p.title=p_title, p.tree=p_tree, p.aln=p_aln,
+    seqs=seqs, msa=msa, tree=tree, ty=ty)
+saveRDS(r, glue("{args$fo}.rds"))
 
 

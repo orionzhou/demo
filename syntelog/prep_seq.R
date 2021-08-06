@@ -73,7 +73,7 @@ extract_fa  <- function(tb, cfg, gt='Zmays_B73', opt='cds', id='test') {
     #
     db = cfg$genomes[[gt]]$fasta
     fs = glue("{pre}.tsv")
-    cmd = glue("bedtools getfasta -tab -nameOnly -fi {db} -bed {fb} -fo {fs}")
+    cmd = glue("bedtools getfasta -tab -nameOnly -s -fi {db} -bed {fb} -fo {fs}")
     system(cmd)
     to = read_tsv(fs, col_names=c('fid','seq')) %>% arrange(fid)
     system(glue("rm -rf {pre}.*"))
